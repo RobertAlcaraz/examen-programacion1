@@ -1,10 +1,947 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <title>Inicio</title>
+  <meta charset="UTF-8">
+  <title>Sistema de Asistencias - Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Variables de color - NUEVA PALETA CON AZUL/VERDOSO QUE COMBINA CON EL GRIS OSCURO */
+    :root {
+      --primary-bg-dark: #343a40;      /* Gris oscuro suave - Fondo principal (body) */
+      --secondary-bg-light: #495057;   /* Gris más claro - Fondo contenedores (navbar, cards, modales) */
+      --primary-color-main: #20c997;   /* Nuevo: Azul verdoso vibrante pero elegante (teal) - Elementos principales, títulos, headers */
+      --primary-color-light: #66d9ef;  /* Nuevo: Azul claro/cian - Marca, nav-links hover, gradientes */
+      --accent-color: #f97316;        /* Naranja suave - Acento profesional (botones primarios, focus) - Se mantiene o se ajusta si no combina */
+      --secondary-text-color: #adb5bd; /* Gris claro para texto secundario sobre fondo oscuro */
+      --success-color: #28a745;       /* Verde éxito (tono estándar Bootstrap) */
+      --danger-color: #dc3545;        /* Rojo peligro (tono estándar Bootstrap) */
+      --info-color: #17a2b8;          /* Azul info (se puede mantener) */
+      --warning-color: #ffc107;       /* Amarillo advertencia (se puede mantener) */
+      --light-bg: #f8f9fa;            /* Gris muy claro para celdas de tabla, inputs */
+      --white-bg: #ffffff;            /* Blanco puro (no tan usado) */
+      --dark-text: #ffffff;           /* Texto principal blanco para mejor legibilidad sobre fondo oscuro */
+      --dark-text-contrast: #212529;  /* Texto oscuro para elementos con fondo claro (inputs, celdas) */
+      --border-color: #6c757d;        /* Borde grisáceo más visible */
+      --shadow-light: rgba(0, 0, 0, 0.1);
+      --shadow-medium: rgba(0, 0, 0, 0.2);
+    }
+
+    body {
+      background-color: var(--primary-bg-dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--dark-text); /* Color de texto por defecto blanco para el body */
+      padding-top: 25px;
+      padding-bottom: 60px;
+    }
+    .container-fluid {
+      max-width: 1400px;
+    }
+    .navbar {
+      background-color: var(--secondary-bg-light);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px var(--shadow-light);
+      margin-bottom: 40px;
+      padding: 15px 25px;
+    }
+    .navbar-brand {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      color: var(--primary-color-light) !important; /* Azul claro/cian para la marca sobre fondo oscuro */
+      font-size: 1.6rem;
+      transition: color 0.3s ease;
+    }
+    .navbar-brand:hover {
+      color: var(--white-bg) !important; /* Blanco en hover */
+    }
+    .nav-link {
+      color: var(--secondary-text-color) !important;
+      font-weight: 500;
+      margin-left: 20px;
+      font-size: 1.05rem;
+      transition: color 0.3s ease, transform 0.2s ease;
+    }
+    .nav-link:hover {
+      color: var(--primary-color-light) !important; /* Azul claro/cian en hover */
+      transform: translateY(-2px);
+    }
+    .btn-outline-danger {
+      color: var(--danger-color) !important;
+      border-color: var(--danger-color) !important;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      padding: 8px 18px;
+    }
+    .btn-outline-danger:hover {
+      background-color: var(--danger-color) !important;
+      color: white !important;
+      box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+    }
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      color: var(--primary-color-main); /* Título principal en azul verdoso */
+      font-weight: 700;
+      margin-bottom: 40px;
+      font-size: 2.8rem;
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-family: 'Poppins', sans-serif;
+      color: var(--white-bg);
+      font-weight: 600;
+      font-size: 1.8rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 0;
+    }
+
+    .card {
+      background-color: var(--secondary-bg-light); /* Fondo de la tarjeta más claro que el body */
+      border-radius: 16px;
+      box-shadow: 0 8px 25px var(--shadow-light);
+      border: none;
+      margin-bottom: 35px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px var(--shadow-medium);
+    }
+    .card-header {
+      /* Degradado del nuevo azul verdoso principal al azul claro/cian */
+      background: linear-gradient(45deg, var(--primary-color-main) 0%, var(--primary-color-light) 100%);
+      color: var(--white-bg);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      font-weight: 600;
+      padding: 20px 30px;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      letter-spacing: 0.02em;
+    }
+    .card-header i {
+      margin-right: 12px;
+      font-size: 1.4rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .card-body {
+      padding: 30px;
+      color: var(--dark-text); /* Asegurar que el texto dentro de la tarjeta sea legible (blanco) */
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      padding: 12px 18px;
+      font-size: 1rem;
+      color: var(--dark-text-contrast); /* Texto en inputs oscuro para legibilidad */
+      background-color: var(--light-bg); /* Fondo de inputs muy claro */
+      transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent-color); /* Naranja suave para el focus */
+      box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25); /* Sombra de enfoque naranja */
+    }
+    .form-label {
+      font-weight: 600;
+      color: var(--dark-text); /* Etiquetas blancas para contraste */
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    .form-check-label {
+      color: var(--dark-text); /* Asegurar que los labels de radio/checkbox también sean blancos */
+    }
+    .btn-primary {
+      /* Degradado del nuevo azul verdoso al naranja suave para botones primarios */
+      background: linear-gradient(90deg, var(--primary-color-main) 0%, var(--accent-color) 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 12px 25px;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      color: var(--dark-text-contrast); /* Texto oscuro en botones primarios para legibilidad */
+    }
+    .btn-primary:hover {
+      /* Invertir el gradiente en hover */
+      background: linear-gradient(90deg, var(--accent-color) 0%, var(--primary-color-main) 100%);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      transform: translateY(-2px);
+    }
+    /* Botones de acción en tablas (Editar, Eliminar) */
+    .btn-warning, .btn-danger, .btn-info {
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      color: var(--dark-text-contrast); /* Texto oscuro para estos botones también */
+    }
+    .btn-warning {
+      background-color: #facc15; /* Amarillo mostaza más suave */
+      border-color: #facc15;
+    }
+    .btn-warning:hover {
+      background-color: #eab308;
+      border-color: #eab308;
+      transform: translateY(-1px);
+    }
+    .btn-danger {
+      background-color: var(--danger-color); /* Rojo más suave */
+      border-color: var(--danger-color);
+      color: var(--white-bg); /* Texto blanco para el botón de eliminar */
+    }
+    .btn-danger:hover {
+      background-color: #b91c1c;
+      border-color: #991b1b;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background-color: var(--secondary-text-color); /* Gris claro para botones secundarios */
+      border-color: var(--secondary-text-color);
+      color: var(--dark-text-contrast); /* Texto oscuro para el botón secundario */
+    }
+    .btn-secondary:hover {
+      background-color: #718096;
+      border-color: #718096;
+    }
+
+    .table {
+      background-color: var(--secondary-bg-light); /* Fondo de tabla más claro */
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px var(--shadow-light);
+    }
+    .table thead th {
+      background-color: var(--primary-color-main); /* Nuevo azul verdoso para encabezado de tabla */
+      color: var(--white-bg);
+      font-weight: 600;
+      vertical-align: middle;
+      padding: 15px 20px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: none;
+    }
+    .table tbody td {
+      vertical-align: middle;
+      color: var(--dark-text-contrast); /* Texto oscuro para las celdas */
+      padding: 15px 20px;
+      font-size: 1rem;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--light-bg); /* Fondo de celdas un poco más claro para contraste */
+    }
+    .table tbody tr:first-child td {
+      border-top: none;
+    }
+    .table-hover tbody tr:hover {
+      background-color: rgba(32, 201, 151, 0.1); /* Hover con un 10% de opacidad del nuevo azul verdoso */
+    }
+    .text-presente {
+      color: var(--success-color);
+      font-weight: 600;
+    }
+    .text-ausente {
+      color: var(--danger-color);
+      font-weight: 600;
+    }
+    /* Estilos para alertas y mensajes */
+    .alert-info, .alert-danger, .alert-success {
+      border-radius: 10px;
+      font-weight: 500;
+      margin-bottom: 25px;
+      padding: 18px 25px;
+      font-size: 1rem;
+      animation: fadeInDown 0.5s ease-out;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      color: var(--dark-text-contrast); /* Texto oscuro en alertas */
+    }
+    /* Colores de alerta ajustados a la nueva paleta (tonos más suaves sobre fondo oscuro) */
+    .alert-info {
+      background-color: #e0f2f7;
+      color: #17a2b8; /* Se mantiene el color info */
+      border-color: #b3e0f2;
+    }
+    .alert-danger {
+      background-color: #ffebee;
+      color: #f44336;
+      border-color: #ef9a9a;
+    }
+    .alert-success {
+      background-color: #e8f5e9;
+      color: #4caf50;
+      border-color: #c8e6c9;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--secondary-text-color);
+      font-size: 0.9rem;
+    }
+
+    /* Estilos para modales */
+    .modal-open {
+      overflow: hidden !important;
+      padding-right: 0px !important;
+    }
+
+    .modal-dialog {
+      /* CAMBIOS PARA CENTRAR EL MODAL EN CSS */
+      display: flex; /* Habilitar flexbox */
+      align-items: center; /* Centrar verticalmente los ítems (el modal-content) */
+      justify-content: center; /* Centrar horizontalmente los ítems (el modal-content) */
+      min-height: calc(100vh - 3.5rem); /* Asegurar que ocupe casi toda la altura de la ventana */
+      margin: 1.75rem auto; /* Se mantiene para compatibilidad y posible fallback, aunque flexbox toma precedencia */
+      padding: 0 1rem; /* Añadir un poco de padding para que no toque los bordes en móviles */
+
+      /* Para el ancho del modal-dialog, si quieres que controle el ancho directamente, usa esto.
+         Si quieres que el modal-content defina el ancho, puedes dejar esto como estaba (98vw)
+         o ajustarlo para que sea menos restrictivo.
+      */
+      max-width: 700px; /* Un valor fijo para probar, ajústalo a tu preferencia */
+      width: 90%; /* Esto ayudará en pantallas más pequeñas */
+    }
+
+    @media (min-width: 576px) {
+      .modal-dialog {
+        max-width: 700px; /* Ajusta este valor según el ancho deseado para pantallas medianas en adelante */
+        width: 90%; /* Asegura que no sea demasiado pequeño */
+      }
+    }
+
+    /* El modal-content es el que realmente contiene el formulario, su ancho también es crucial */
+    .modal-content {
+      background-color: var(--secondary-bg-light); /* Fondo del modal más claro */
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      /* REVISIÓN DE ANCHO DEL MODAL-CONTENT */
+      width: 100%; /* El modal-content debe ocupar el 100% de su padre (.modal-dialog) */
+      max-width: 100%; /* Asegurarse de que no exceda el 100% */
+      /* --- FIN REVISIÓN DE ANCHO --- */
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+      display: flex;
+      flex-direction: column;
+      color: var(--dark-text); /* Texto blanco en el modal */
+    }
+
+    /* El resto de tus estilos de modal-header, modal-body, modal-footer, etc. */
+    .modal-header {
+      background: linear-gradient(45deg, var(--primary-color-main) 0%, var(--primary-color-light) 100%);
+      color: var(--white-bg);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      padding: 20px;
+      font-weight: 600;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      color: var(--white-bg);
+    }
+    .modal-body {
+      overflow-y: auto;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+      flex-grow: 1;
+      padding: 25px;
+    }
+    .modal-footer {
+      flex-shrink: 0;
+    }
+    .modal-footer .btn-secondary {
+      background-color: var(--secondary-text-color);
+      border-color: var(--secondary-text-color);
+      color: var(--dark-text-contrast);
+      border-radius: 8px;
+    }
+    .modal-footer .btn-secondary:hover {
+      background-color: #718096;
+      border-color: #718096;
+    }
+    .modal-footer .btn-primary, .modal-footer .btn-success {
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--dark-text-contrast);
+    }
+
+    /* Asegurar que los campos dentro del modal no causen desbordamiento */
+    .modal-body .form-control,
+    .modal-body .form-select,
+    .modal-body .btn {
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Ajustes específicos para el header de la sección de contactos */
+    #contactos-section .card-header h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0;
+    }
+    #contactos-section .card-header .btn-primary {
+      padding: 8px 18px;
+      font-size: 0.95rem;
+      box-shadow: none;
+      color: var(--dark-text-contrast);
+    }
+    #contactos-section .card-header .btn-primary:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    @media (max-width: 992px) {
+      .navbar-nav {
+        margin-top: 15px;
+        margin-left: 0 !important;
+      }
+      .nav-item {
+        margin-left: 0 !important;
+        margin-bottom: 8px;
+      }
+      .btn-outline-danger {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-top: 10px;
+      }
+      .card-header {
+        font-size: 1.05rem;
+      }
+      .card-header i {
+        font-size: 1.2rem;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 30px;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+      #contactos-section .card-header {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+      }
+    }
+
+    /* Asegurar que los contenedores principales de Bootstrap también respeten los límites */
+    .container, .container-fluid {
+      overflow-x: hidden !important;
+    }
+  </style>
 </head>
 <body>
-<h1>Bienvenido a Intelligence Idea</h1>
-<a th:href="@{/logout}">Cerrar sesión</a>
+
+<nav class="navbar navbar-expand-lg navbar-light container-fluid">
+  <div class="container">
+    <a class="navbar-brand" href="/home">
+      <i class="fas fa-graduation-cap me-2"></i> AsistenciaPro
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#alumnos-section">Alumnos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#asistencias-section">Asistencias</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#contactos-section">Contactos</a>
+        </li>
+        <li class="nav-item">
+          <form th:action="@{/logout}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger ms-3">Cerrar sesión <i class="fas fa-sign-out-alt ms-1"></i></button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <h1 class="text-center mb-5">Panel de Gestión de Asistencias</h1>
+
+  <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <span th:text="${mensajeExito}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span th:text="${mensajeError}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-user-plus"></i> Añadir Nuevo Alumno
+        </div>
+        <div class="card-body">
+          <form th:action="@{/guardarAlumno}" method="post" th:object="${nuevoAlumno}">
+            <div class="mb-3">
+              <label for="nombreAlumno" class="form-label">Nombre Completo:</label>
+              <input type="text" th:field="*{nombre}" id="nombreAlumno" class="form-control" placeholder="Ej: Sofía Martínez" required>
+            </div>
+            <div class="mb-3">
+              <label for="cursoAlumno" class="form-label">Curso/Grado:</label>
+              <input type="text" th:field="*{curso}" id="cursoAlumno" class="form-control" placeholder="Ej: 5to Primaria 'A'" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Alumno</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-clipboard-check"></i> Registrar Asistencia
+        </div>
+        <div class="card-body">
+          <form th:action="@{/guardarAsistencia}" method="post" th:object="${nuevaAsistencia}">
+            <div class="mb-3">
+              <label for="alumnoId" class="form-label">Seleccione Alumno:</label>
+              <select id="alumnoId" class="form-select" th:field="*{alumno.id}" required>
+                <option value="">-- Seleccione un alumno --</option>
+                <option th:each="alumno : ${alumnos}" th:value="${alumno.id}" th:text="${alumno.nombre + ' (' + alumno.curso + ')'}"></option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="fechaAsistencia" class="form-label">Fecha de Asistencia:</label>
+              <input type="date" id="fechaAsistencia" class="form-control" th:field="*{fecha}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label d-block">Estado:</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" th:field="*{presente}" id="presenteTrue" value="true">
+                <label class="form-check-label" for="presenteTrue">Presente</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" th:field="*{presente}" id="presenteFalse" value="false">
+                <label class="form-check-label" for="presenteFalse">Ausente</label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Registrar Asistencia</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-address-book"></i> Añadir Nuevo Contacto
+        </div>
+        <div class="card-body">
+          <form id="formNuevoContacto" th:action="@{/guardarContacto}" th:object="${nuevoContacto}" method="post">
+            <div class="mb-3">
+              <label for="contactoNombre" class="form-label">Nombre del Contacto:</label>
+              <input type="text" class="form-control" id="contactoNombre" th:field="*{nombre}" placeholder="Ej: Juan Pérez" required>
+            </div>
+            <div class="mb-3">
+              <label for="contactoRelacion" class="form-label">Relación con el Alumno:</label>
+              <input type="text" class="form-control" id="contactoRelacion" th:field="*{relacion}" placeholder="Ej: Padre, Madre, Tutor" required>
+            </div>
+            <div class="mb-3">
+              <label for="contactoTelefono" class="form-label">Teléfono:</label>
+              <input type="tel" class="form-control" id="contactoTelefono" th:field="*{telefono}" required>
+            </div>
+            <div class="mb-3">
+              <label for="contactoEmail" class="form-label">Email:</label>
+              <input type="email" class="form-control" id="contactoEmail" th:field="*{email}" placeholder="Ej: juan.perez@example.com">
+            </div>
+            <div class="mb-3">
+              <label for="alumnoContacto" class="form-label">Alumno Asociado:</label>
+              <select class="form-select" id="alumnoContacto" th:field="*{alumno.id}" required>
+                <option value="">Seleccione un alumno</option>
+                <option th:each="alumno : ${alumnos}" th:value="${alumno.id}" th:text="${alumno.nombre + ' (' + alumno.curso + ')'}"></option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Contacto</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alumnos-section" class="card mt-5">
+    <div class="card-header">
+      <i class="fas fa-users"></i> Listado de Alumnos
+    </div>
+    <div class="card-body">
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <form th:action="@{/home}" method="get" class="d-flex">
+            <input type="text" name="searchQuery" class="form-control me-2" placeholder="Buscar alumnos por nombre..." th:value="${searchQuery}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Buscar</button>
+            <a th:href="@{/home}" class="btn btn-secondary ms-2" th:if="${searchQuery != null and !searchQuery.isEmpty()}"><i class="fas fa-times"></i> Limpiar</a>
+          </form>
+        </div>
+      </div>
+
+      <div th:if="${mensajeInfoBusqueda}" class="alert alert-info alert-dismissible fade show" role="alert">
+        <span th:text="${mensajeInfoBusqueda}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <div th:if="${#lists.isEmpty(alumnos)}" class="alert alert-info text-center" role="alert">
+        <span th:if="${searchQuery != null and !searchQuery.isEmpty()}">No se encontraron alumnos con el nombre '<span th:text="${searchQuery}"></span>'.</span>
+        <span th:unless="${searchQuery != null and !searchQuery.isEmpty()}">No hay alumnos registrados aún.</span>
+      </div>
+      <div th:unless="${#lists.isEmpty(alumnos)}" class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Curso</th>
+            <th scope="col">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="alumno : ${alumnos}">
+            <td th:text="${alumno.id}"></td>
+            <td th:text="${alumno.nombre}"></td>
+            <td th:text="${alumno.curso}"></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-warning"
+                      data-bs-toggle="modal" data-bs-target="#editarAlumnoModal"
+                      th:data-id="${alumno.id}"
+                      th:data-nombre="${alumno.nombre}"
+                      th:data-curso="${alumno.curso}"
+                      onclick="llenarModalEdicionAlumno(this)">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+
+              <form th:action="@{/eliminarAlumno}" method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar al alumno ' + ${alumno.nombre} + ' y todas sus asistencias y contactos asociados?');">
+                <input type="hidden" name="id" th:value="${alumno.id}" />
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i> Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="asistencias-section" class="card mt-5">
+    <div class="card-header">
+      <i class="fas fa-calendar-alt"></i> Historial de Asistencias
+    </div>
+    <div class="card-body">
+      <div th:if="${#lists.isEmpty(asistencias)}" class="alert alert-info text-center" role="alert">
+        No hay asistencias registradas aún (o no se cargaron correctamente en la vista).
+      </div>
+      <div th:unless="${#lists.isEmpty(asistencias)}" class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+          <tr>
+            <th scope="col">ID Asistencia</th>
+            <th scope="col">Alumno</th>
+            <th scope="col">Curso</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="asistencia : ${asistencias}">
+            <td th:text="${asistencia.id != null ? asistencia.id : 'ID Nulo'}"></td>
+            <td th:text="${asistencia.alumno != null && asistencia.alumno.nombre != null ? asistencia.alumno.nombre : 'Nombre Nulo'}"></td>
+            <td th:text="${asistencia.alumno != null && asistencia.alumno.curso != null ? asistencia.alumno.curso : 'Curso Nulo'}"></td>
+            <td th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd-MM-yyyy') : 'Fecha Nula'}"></td>
+            <td th:classappend="${asistencia.presente != null ? (asistencia.presente ? 'text-presente' : 'text-ausente') : ''}"
+                th:text="${asistencia.presente != null ? (asistencia.presente ? 'Presente' : 'Ausente') : 'Estado Nulo'}"></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-warning"
+                      data-bs-toggle="modal" data-bs-target="#editarAsistenciaModal"
+                      th:data-id="${asistencia.id}"
+                      th:data-alumnoid="${asistencia.alumno != null ? asistencia.alumno.id : ''}"
+                      th:data-fecha="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'yyyy-MM-dd') : ''}"
+                      th:data-presente="${asistencia.presente}"
+                      onclick="llenarModalEdicionAsistencia(this)">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <form th:action="@{/eliminarAsistencia}" method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta asistencia?');">
+                <input type="hidden" name="id" th:value="${asistencia.id}" />
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i> Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="contactos-section" class="card mt-5">
+    <div class="card-header">
+      <i class="fas fa-address-book"></i> Gestión de Contactos
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Relación</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Alumno Asociado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="contacto : ${contactos}">
+            <td th:text="${contacto.id}"></td>
+            <td th:text="${contacto.nombre}"></td>
+            <td th:text="${contacto.relacion}"></td>
+            <td th:text="${contacto.telefono}"></td>
+            <td th:text="${contacto.email}"></td>
+            <td th:text="${contacto.alumno != null ? contacto.alumno.nombre + ' (' + contacto.alumno.curso + ')' : 'N/A'}"></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-warning"
+                      data-bs-toggle="modal" data-bs-target="#editarContactoModal"
+                      th:data-id="${contacto.id}"
+                      th:data-nombre="${contacto.nombre}"
+                      th:data-relacion="${contacto.relacion}"
+                      th:data-telefono="${contacto.telefono}"
+                      th:data-email="${contacto.email}"
+                      th:data-alumnoid="${contacto.alumno != null ? contacto.alumno.id : ''}"
+                      onclick="llenarModalEdicionContacto(this)">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <form th:action="@{/eliminarContacto}" method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este contacto?');">
+                <input type="hidden" name="id" th:value="${contacto.id}" />
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i> Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(contactos)}">
+            <td colspan="7" class="text-center">No hay contactos registrados.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center mt-5">
+    <p>&copy; 2025 AsistenciaPro. Desarrollado con Spring Boot &amp; Thymeleaf.</p>
+  </footer>
+
+</div>
+
+<div class="modal fade" id="editarAlumnoModal" tabindex="-1" aria-labelledby="editarAlumnoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editarAlumnoModalLabel">Editar Alumno</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form th:action="@{/editarAlumno}" method="post" th:object="${alumnoModificado}">
+          <input type="hidden" id="editAlumnoId" th:field="*{id}">
+          <div class="mb-3">
+            <label for="editAlumnoNombre" class="form-label">Nombre Completo:</label>
+            <input type="text" class="form-control" id="editAlumnoNombre" th:field="*{nombre}" required>
+          </div>
+          <div class="mb-3">
+            <label for="editAlumnoCurso" class="form-label">Curso/Grado:</label>
+            <input type="text" class="form-control" id="editAlumnoCurso" th:field="*{curso}" required>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editarAsistenciaModal" tabindex="-1" aria-labelledby="editarAsistenciaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editarAsistenciaModalLabel">Editar Asistencia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form th:action="@{/editarAsistencia}" method="post" th:object="${asistenciaModificada}">
+          <input type="hidden" id="editAsistenciaId" th:field="*{id}">
+          <div class="mb-3">
+            <label for="editAsistenciaAlumnoId" class="form-label">Alumno:</label>
+            <select id="editAsistenciaAlumnoId" class="form-select" th:field="*{alumno.id}" required>
+              <option value="">-- Seleccione un alumno --</option>
+              <option th:each="alumno : ${alumnos}" th:value="${alumno.id}" th:text="${alumno.nombre + ' (' + alumno.curso + ')'}"></option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editAsistenciaFecha" class="form-label">Fecha de Asistencia:</label>
+            <input type="date" class="form-control" id="editAsistenciaFecha" th:field="*{fecha}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Estado:</label>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" th:field="*{presente}" id="editAsistenciaPresenteTrue" value="true">
+              <label class="form-check-label" for="editAsistenciaPresenteTrue">Presente</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" th:field="*{presente}" id="editAsistenciaPresenteFalse" value="false">
+              <label class="form-check-label" for="editAsistenciaPresenteFalse">Ausente</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editarContactoModal" tabindex="-1" aria-labelledby="editarContactoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editarContactoModalLabel">Editar Contacto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form th:action="@{/editarContacto}" method="post" th:object="${contactoModificado}">
+          <input type="hidden" id="editContactoId" th:field="*{id}">
+          <div class="mb-3">
+            <label for="editContactoNombre" class="form-label">Nombre del Contacto:</label>
+            <input type="text" class="form-control" id="editContactoNombre" th:field="*{nombre}" required>
+          </div>
+          <div class="mb-3">
+            <label for="editContactoRelacion" class="form-label">Relación con el Alumno:</label>
+            <input type="text" class="form-control" id="editContactoRelacion" th:field="*{relacion}" placeholder="Ej: Padre, Madre, Tutor" required>
+          </div>
+          <div class="mb-3">
+            <label for="editContactoTelefono" class="form-label">Teléfono:</label>
+            <input type="tel" class="form-control" id="editContactoTelefono" th:field="*{telefono}" required>
+          </div>
+          <div class="mb-3">
+            <label for="editContactoEmail" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="editContactoEmail" th:field="*{email}" placeholder="Ej: contacto@ejemplo.com">
+          </div>
+          <div class="mb-3">
+            <label for="editContactoAlumnoId" class="form-label">Alumno Asociado:</label>
+            <select id="editContactoAlumnoId" class="form-select" th:field="*{alumno.id}" required>
+              <option value="">-- Seleccione un alumno --</option>
+              <option th:each="alumno : ${alumnos}" th:value="${alumno.id}" th:text="${alumno.nombre + ' (' + alumno.curso + ')'}"></option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Función para llenar el modal de edición de Alumnos
+  function llenarModalEdicionAlumno(button) {
+    var id = button.getAttribute('data-id');
+    var nombre = button.getAttribute('data-nombre');
+    var curso = button.getAttribute('data-curso');
+
+    document.getElementById('editAlumnoId').value = id;
+    document.getElementById('editAlumnoNombre').value = nombre;
+    document.getElementById('editAlumnoCurso').value = curso;
+  }
+
+  // Función para llenar el modal de edición de Asistencias
+  function llenarModalEdicionAsistencia(button) {
+    var id = button.getAttribute('data-id');
+    var alumnoId = button.getAttribute('data-alumnoid');
+    var fecha = button.getAttribute('data-fecha'); // Esto ya viene en formatoYYYY-MM-DD
+    var presente = button.getAttribute('data-presente'); // Esto viene como 'true' o 'false' (string)
+
+    document.getElementById('editAsistenciaId').value = id;
+    document.getElementById('editAsistenciaFecha').value = fecha;
+
+    // Seleccionar el alumno correcto en el dropdown
+    var selectAlumno = document.getElementById('editAsistenciaAlumnoId');
+    for (var i = 0; i < selectAlumno.options.length; i++) {
+      if (selectAlumno.options[i].value === alumnoId) {
+        selectAlumno.selectedIndex = i;
+        break;
+      }
+    }
+
+    // Marcar el radio button correcto (Presente/Ausente)
+    if (presente === 'true') {
+      document.getElementById('editAsistenciaPresenteTrue').checked = true;
+      document.getElementById('editAsistenciaPresenteFalse').checked = false;
+    } else if (presente === 'false') {
+      document.getElementById('editAsistenciaPresenteFalse').checked = true;
+      document.getElementById('editAsistenciaPresenteTrue').checked = false;
+    }
+  }
+
+  // Función para llenar el modal de edición de Contactos
+  function llenarModalEdicionContacto(button) {
+    var id = button.getAttribute('data-id');
+    var nombre = button.getAttribute('data-nombre');
+    var relacion = button.getAttribute('data-relacion');
+    var telefono = button.getAttribute('data-telefono');
+    var email = button.getAttribute('data-email');
+    var alumnoId = button.getAttribute('data-alumnoid');
+
+    document.getElementById('editContactoId').value = id;
+    document.getElementById('editContactoNombre').value = nombre;
+    document.getElementById('editContactoRelacion').value = relacion;
+    document.getElementById('editContactoTelefono').value = telefono;
+    document.getElementById('editContactoEmail').value = email;
+
+    // Seleccionar el alumno correcto en el dropdown
+    var selectAlumno = document.getElementById('editContactoAlumnoId');
+    for (var i = 0; i < selectAlumno.options.length; i++) {
+      if (selectAlumno.options[i].value === alumnoId) {
+        selectAlumno.selectedIndex = i;
+        break;
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Lógica para limpiar mensajes de alerta después de unos segundos
+    const alerts = document.querySelectorAll('.alert-dismissible');
+    alerts.forEach(function(alert) {
+      setTimeout(function() {
+        const bsAlert = bootstrap.Alert.getInstance(alert);
+        if (bsAlert) {
+          bsAlert.close();
+        } else {
+          alert.style.display = 'none';
+        }
+      }, 5000); // Cierra la alerta después de 5 segundos
+    });
+  });
+</script>
 </body>
 </html>
